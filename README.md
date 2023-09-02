@@ -61,3 +61,17 @@ Bem-vindo ao **Rastreio Imaco**, o aplicativo de Rastreamento de Índice de Mass
 - **ValorInvalidoError**: Trata erros relacionados a valores inválidos de IMC.
 
 Este aplicativo foi desenvolvido para o 'Santander Bootcamp 2023 - Mobile com Flutter'. Ele utiliza uma variedade de widgets do Flutter para criar uma interface intuitiva e responsiva. 🚀
+
+## Palavras do Autor 👨‍💻
+
+Uau! Esse desafio foi realmente um desafio completo.
+
+Com a construção deste aplicativo, consegui aprender tudo que eu não sabia para ele existir.
+
+Irônico, mas a pura verdade. Após entender o básico de Dart, passar por alguns Widgets de Flutter, eu sempre me deparava com alguma necessidade que ainda não foi explicada.
+
+Então depois de muitas pesquisas, leituras, testes e mais testes, fui desenvolvendo pedaço por pedaço desse aplicativo até ele se tornar tudo que é agora.
+
+Sei que ainda é possível fazer algo melhor, mais intuitivo, com cores personalizáveis e com um formato totalmente diferente. Mesmo assim estou super satisfeito e contente com o trabalho que desenvolvi até aqui e tenho certeza que projetos melhores e maiores virão.
+
+Agradeço a todos que me ajudaram direta ou indiretamente a chegar até aqui. E que venham mais desafios! 🚀
