@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:rastreio_imaco/models/calc_imc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
