@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:rastreio_imaco/models/calc_imc.dart';
 import 'package:rastreio_imaco/pages/imc_list_page.dart';
 import 'package:rastreio_imaco/pages/welcome_page.dart';
 import 'package:rastreio_imaco/pages/secondary_welcome_page.dart';
@@ -29,6 +27,23 @@ class _HomeRastreioImacoState extends State<HomeRastreioImaco> {
   int showOnlyArchived = 2;
   int oldShowOnlyArchived = 2;
   Timer? _bannerTimer;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Inicializa o repositório de registros
+    _initializeRepository();
+  }
+
+  void _initializeRepository() async {
+    await registersRepository.initRepository().then((_) {
+      setState(() {
+        // Quando os dados estiverem prontos, defina isLoading como falso
+        _isLoading = false;
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -39,23 +54,29 @@ class _HomeRastreioImacoState extends State<HomeRastreioImaco> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      primary: true,
-      // Barra de título do aplicativo
-      appBar: AppBarRastreioImaco(
-        toggleTheme: widget.toggleTheme,
-        filterRegisters: _filterRegisters,
-        showOnlyArchived: showOnlyArchived,
-      ),
-      // Botão flutuante para adicionar um novo registro
-      floatingActionButton: FloatActionButtonRastreioImaco(
-        editCreateRegister: _editCreateRegister,
-        registersRepository: registersRepository,
-        updateListView: _updateListView,
-      ),
-      // Página da lista de registros
-      body: _buildBodyPage(),
-    );
+    if (_isLoading) {
+      // Mostra uma tela de carregamento enquanto os dados estão sendo carregados
+      return const Center(child: CircularProgressIndicator());
+    } else {
+      // Quando os dados estiverem prontos, exiba a tela principal
+      return Scaffold(
+        primary: true,
+        // Barra de título do aplicativo
+        appBar: AppBarRastreioImaco(
+          toggleTheme: widget.toggleTheme,
+          filterRegisters: _filterRegisters,
+          showOnlyArchived: showOnlyArchived,
+        ),
+        // Botão flutuante para adicionar um novo registro
+        floatingActionButton: FloatActionButtonRastreioImaco(
+          editCreateRegister: _editCreateRegister,
+          registersRepository: registersRepository,
+          updateListView: _updateListView,
+        ),
+        // Página da lista de registros
+        body: _buildBodyPage(),
+      );
+    }
   }
 
   void _editCreateRegister(
@@ -164,7 +185,6 @@ class _HomeRastreioImacoState extends State<HomeRastreioImaco> {
     setState(() {});
   }
 
-  // Função para construir o corpo da página
   Widget _buildBodyPage() {
     if (registersRepository.length(showOnlyArchived) > 0) {
       // Retorna a página de listagem de registros
@@ -182,53 +202,8 @@ class _HomeRastreioImacoState extends State<HomeRastreioImaco> {
     }
     // Retorna a página de boas-vindas caso não haja registros
     return WelcomePage(
-      startDemo: _startDemo,
+      registersRepository: registersRepository,
+      updateListView: _updateListView,
     );
-  }
-
-  void _startDemo() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Iniciar demonstração?'),
-          content: const Text(
-            'Isso irá adicionar 100 registros aleatórios ao aplicativo.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _addDemoRegisters();
-              },
-              child: const Text('Continuar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // Função para adicionar registros de demonstração
-  _addDemoRegisters() {
-    for (int i = 0; i < 100; i++) {
-      final random = Random();
-      double randomPeso = random.nextDouble() * 100 + 30;
-      double randomAltura = random.nextDouble() * 0.5 + 1.5;
-      registersRepository.addRegister(
-        CalcImc(
-          peso: randomPeso,
-          altura: randomAltura,
-          dataRegistro: DateTime.now(),
-        ),
-      );
-    }
-    _updateListView(changeFilter: true);
   }
 }
