@@ -1,11 +1,23 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:rastreio_imaco/models/calc_imc.dart';
+import 'package:rastreio_imaco/repositories/registers_repository.dart';
 
-class WelcomePage extends StatelessWidget {
-  final void Function() startDemo;
-
+class WelcomePage extends StatefulWidget {
+  final RegistersRepository registersRepository;
+  final void Function({bool changeFilter}) updateListView;
   // Construtor da página de boas-vindas
-  const WelcomePage({super.key, required this.startDemo});
+  const WelcomePage(
+      {super.key,
+      required this.registersRepository,
+      required this.updateListView});
 
+  @override
+  State<WelcomePage> createState() => _WelcomePageState();
+}
+
+class _WelcomePageState extends State<WelcomePage> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -20,7 +32,7 @@ class WelcomePage extends StatelessWidget {
                 : 3,
             child: InkWell(
               onLongPress: () {
-                startDemo();
+                _startDemo(context);
               },
               child: Icon(
                 Icons.home,
@@ -127,5 +139,51 @@ class WelcomePage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _startDemo(context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Iniciar demonstração?'),
+          content: const Text(
+            'Isso irá adicionar 100 registros aleatórios ao aplicativo.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _addDemoRegisters();
+              },
+              child: const Text('Continuar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Função para adicionar registros de demonstração
+  void _addDemoRegisters() {
+    for (int i = 0; i < 100; i++) {
+      final random = Random();
+      double randomPeso = random.nextDouble() * 100 + 30;
+      double randomAltura = random.nextDouble() * 0.5 + 1.5;
+      widget.registersRepository.addRegister(
+        CalcImc(
+          peso: randomPeso,
+          altura: randomAltura,
+          dataRegistro: DateTime.now(),
+        ),
+      );
+    }
+    widget.updateListView(changeFilter: true);
   }
 }
