@@ -30,21 +30,8 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    // Inicializa modo do tema de acordo com a configuração no sistema
-    if (_initialThemeModeIsSetted == false) _setInitialThemeMode(context);
-    // Define as configurações de acordo com o modo do tema
-    _setThemeColorsModeAndNotifier();
     // Obtém o provedor de tema da árvore de widgets
-    final themeData = AppThemeImaco(
-      // Configurações de tema do notificador
-      settings: themeNotifier,
-      // Esquema de cores dinâmico para tema claro
-      lightDynamic: lightColorScheme,
-      // Esquema de cores dinâmico para tema escuro
-      darkDynamic: darkColorScheme,
-      // Corpo do aplicativo
-      child: Container(),
-    );
+    final themeData = _configureThemeAndNotifier();
     // Constrói a interface do usuário com base nas configurações do tema
     return ValueListenableBuilder<ImacoAppThemeSettings>(
       valueListenable: themeNotifier,
@@ -83,15 +70,30 @@ class _MyAppState extends State<MyApp> {
   }
 
   // Função para configurar as variáveis de cores e notificador de tema
-  void _setThemeColorsModeAndNotifier() {
+  AppThemeImaco _configureThemeAndNotifier() {
+    // Inicializa modo do tema de acordo com a configuração no sistema
+    if (_initialThemeModeIsSetted == false) _setInitialThemeMode(context);
+    // Define o esquema de cores com base no modo escuro
     colorScheme = isDarkMode ? darkColorScheme : lightColorScheme;
+    // Define o modo do tema com base no modo escuro
     themeMode = isDarkMode ? ThemeMode.dark : ThemeMode.light;
-    // altera o notificador de acordo com o tema e as cores do tema
+    // Define o notificador de tema
     themeNotifier = ThemeNotifierImaco(
+      // Configurações de tema
       ImacoAppThemeSettings(
         sourceColor: colorScheme.primary,
         themeMode: themeMode,
       ),
+    );
+    // Retorna o provedor de tema
+    return AppThemeImaco(
+      // Notificador de tema
+      settings: themeNotifier,
+      // Esquema de cores dinâmico para tema claro
+      lightDynamic: lightColorScheme,
+      // Esquema de cores dinâmico para tema escuro
+      darkDynamic: darkColorScheme,
+      child: Container(),
     );
   }
 }

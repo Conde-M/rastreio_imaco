@@ -24,25 +24,70 @@ class _HomeRastreioImacoState extends State<HomeRastreioImaco> {
   // Instância do repositório de registros
   RegistersRepository registersRepository = RegistersRepository();
   // Flag para indicar como os registros devem ser filtrados
-  int showOnlyArchived = 2;
+  int filterNumber = 2;
   int oldShowOnlyArchived = 2;
+  int length = 0;
   Timer? _bannerTimer;
-  bool _isLoading = true;
 
   @override
-  void initState() {
-    super.initState();
-    // Inicializa o repositório de registros
-    _initializeRepository();
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _getLength(filterNumber),
+      builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          return Scaffold(
+            primary: true,
+            // Barra de título do aplicativo
+            appBar: AppBarRastreioImaco(
+              toggleTheme: widget.toggleTheme,
+              filterRegisters: _filterRegisters,
+              showOnlyArchived: filterNumber,
+            ),
+            // Botão flutuante para adicionar um novo registro
+            floatingActionButton: FloatActionButtonRastreioImaco(
+              editCreateRegister: _editCreateRegister,
+              registersRepository: registersRepository,
+              updateListView: _updateListView,
+            ),
+            drawer: _drawerListView(),
+            // Página da lista de registros
+            body: _buildBodyPage(),
+          );
+        }
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+    // Quando os dados estiverem prontos, exiba a tela principal
   }
 
-  void _initializeRepository() async {
-    await registersRepository.initRepository().then((_) {
-      setState(() {
-        // Quando os dados estiverem prontos, defina isLoading como falso
-        _isLoading = false;
-      });
-    });
+  Drawer _drawerListView() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            child: Image.asset(
+              'lib/images/logo.png',
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: const Text('Configurações'),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.info),
+            title: const Text('Sobre'),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -50,33 +95,6 @@ class _HomeRastreioImacoState extends State<HomeRastreioImaco> {
     // Certifique-se de cancelar o timer ao sair da tela
     _bannerTimer?.cancel();
     super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
-      // Mostra uma tela de carregamento enquanto os dados estão sendo carregados
-      return const Center(child: CircularProgressIndicator());
-    } else {
-      // Quando os dados estiverem prontos, exiba a tela principal
-      return Scaffold(
-        primary: true,
-        // Barra de título do aplicativo
-        appBar: AppBarRastreioImaco(
-          toggleTheme: widget.toggleTheme,
-          filterRegisters: _filterRegisters,
-          showOnlyArchived: showOnlyArchived,
-        ),
-        // Botão flutuante para adicionar um novo registro
-        floatingActionButton: FloatActionButtonRastreioImaco(
-          editCreateRegister: _editCreateRegister,
-          registersRepository: registersRepository,
-          updateListView: _updateListView,
-        ),
-        // Página da lista de registros
-        body: _buildBodyPage(),
-      );
-    }
   }
 
   void _editCreateRegister(
@@ -101,7 +119,7 @@ class _HomeRastreioImacoState extends State<HomeRastreioImaco> {
       tooltip: 'Filtrar registros',
       onSelected: (value) {
         // Atualiza a opção de filtro e redesenha a interface
-        showOnlyArchived = value;
+        filterNumber = value;
         _updateListView();
       },
       itemBuilder: (context) {
@@ -132,9 +150,9 @@ class _HomeRastreioImacoState extends State<HomeRastreioImaco> {
       width: 48,
       height: 48,
       child: Icon(
-        showOnlyArchived == 0
+        filterNumber == 0
             ? Icons.filter_alt
-            : showOnlyArchived == 1
+            : filterNumber == 1
                 ? Icons.filter_alt_outlined
                 : Icons.filter_list,
         color: Theme.of(context).colorScheme.onSurface,
@@ -144,9 +162,9 @@ class _HomeRastreioImacoState extends State<HomeRastreioImaco> {
 
   // Função para atualizar a exibição da lista
   void _updateListView({bool changeFilter = false}) {
-    if (changeFilter) showOnlyArchived = 1;
-    if (showOnlyArchived != oldShowOnlyArchived) {
-      oldShowOnlyArchived = showOnlyArchived;
+    if (changeFilter) filterNumber = 1;
+    if (filterNumber != oldShowOnlyArchived) {
+      oldShowOnlyArchived = filterNumber;
       ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
       // mostrar uma mensagem no topo da tela com um Banner contando que o filtro foi alterado
       ScaffoldMessenger.of(context).showMaterialBanner(
@@ -155,9 +173,9 @@ class _HomeRastreioImacoState extends State<HomeRastreioImaco> {
             children: [
               _filterIcon(),
               Text(
-                showOnlyArchived == 0
+                filterNumber == 0
                     ? 'Apenas arquivados'
-                    : showOnlyArchived == 1
+                    : filterNumber == 1
                         ? 'Apenas não arquivados'
                         : 'Todos os registros',
                 style: TextStyle(
@@ -185,20 +203,31 @@ class _HomeRastreioImacoState extends State<HomeRastreioImaco> {
     setState(() {});
   }
 
+  Future<void> _getLength(int filterNumber) async {
+    length = await registersRepository.length(
+        // Se o filtro for 0, mostre apenas registros arquivados
+        showOnlyArchived: filterNumber == 0
+            ? true
+            // Se o filtro for 1, mostre apenas registros não arquivados
+            : filterNumber == 1
+                ? false
+                // Se o filtro for 2, mostre todos os registros
+                : null);
+  }
+
   Widget _buildBodyPage() {
-    if (registersRepository.length(showOnlyArchived) > 0) {
+    if (length > 0) {
       // Retorna a página de listagem de registros
       return ImcListPage(
         registersRepository: registersRepository,
-        showOnlyArchived: showOnlyArchived,
+        showOnlyArchived: filterNumber,
         updateListView: _updateListView,
         editCreateRegister: _editCreateRegister,
       );
     }
-    if (showOnlyArchived < 2 &&
-        registersRepository.length(showOnlyArchived) == 0) {
+    if (filterNumber < 2 && length == 0) {
       // Retorna a página de boas-vindas secundária caso não haja registros
-      return SecondaryWelcomePage(showOnlyArchived: showOnlyArchived);
+      return SecondaryWelcomePage(showOnlyArchived: filterNumber);
     }
     // Retorna a página de boas-vindas caso não haja registros
     return WelcomePage(

@@ -99,9 +99,9 @@ class _ListImcTileState extends State<ListImcTile> {
           "Não é possível arquivar ou desarquivar registros quando a lista está filtrada para exibir todos os registros.");
       return false;
     }
-    widget.archiveRegister(widget.listInfo.id, !widget.listInfo.estaArquivado);
+    widget.archiveRegister(widget.listInfo.id, !widget.listInfo.isArchieved);
     // Mostra SnackBar com a mensagem de arquivamento
-    _showSnackBar(widget.listInfo.estaArquivado
+    _showSnackBar(widget.listInfo.isArchieved
         ? "Registro arquivado!"
         : "Registro desarquivado!");
     return true;
@@ -129,7 +129,7 @@ class _ListImcTileState extends State<ListImcTile> {
             color: Theme.of(context).colorScheme.onInverseSurface,
           ),
           Text(
-            widget.listInfo.estaArquivado ? ' Desarquivar' : ' Arquivar',
+            widget.listInfo.isArchieved ? ' Desarquivar' : ' Arquivar',
             style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                   color: Theme.of(context).colorScheme.onInverseSurface,
                 ),
@@ -166,9 +166,9 @@ class _ListImcTileState extends State<ListImcTile> {
   Widget _listTile(formatedData) {
     return Tooltip(
       key: Key(widget.listInfo.id),
-      enableFeedback: widget.listInfo.estaArquivado ? false : true,
+      enableFeedback: widget.listInfo.isArchieved ? false : true,
       triggerMode: TooltipTriggerMode.tap,
-      message: widget.listInfo.estaArquivado ? 'Arquivado' : 'Não arquivado',
+      message: widget.listInfo.isArchieved ? 'Arquivado' : 'Não arquivado',
       child: ListTile(
         onLongPress: () {
           tileSelected = !tileSelected;
@@ -184,7 +184,7 @@ class _ListImcTileState extends State<ListImcTile> {
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         isThreeLine: true,
-        enabled: widget.listInfo.estaArquivado ? false : true,
+        enabled: widget.listInfo.isArchieved ? false : true,
         titleAlignment: ListTileTitleAlignment.center,
         // Constrói o título
         title: _titleListTile(formatedData),

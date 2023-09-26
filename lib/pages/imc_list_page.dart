@@ -26,14 +26,24 @@ class ImcListPage extends StatefulWidget {
 // Estado da página ImcListPage
 class _ImcListPageState extends State<ImcListPage> {
   // Lista de entradas de IMC
-  late List<CalcImc> imcEntries;
-  // Flag para controle de inicialização do repositório
-  bool _repositoryInitialized = false;
+  List<CalcImc> imcEntries = [];
 
   @override
   Widget build(BuildContext context) {
     // Carregar registros, se necessário
-    _loadRegistersIfNeeded();
+    return FutureBuilder(
+      future: _loadRegisters(widget.showOnlyArchived),
+      builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          return _buildBodyPage();
+        }
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+  }
+
+  // Construir o corpo da página
+  Widget _buildBodyPage() {
     return Container(
       padding: const EdgeInsets.all(10),
       child: ListView.separated(
@@ -64,27 +74,22 @@ class _ImcListPageState extends State<ImcListPage> {
   }
 
   // Carregar registros, se necessário
-  void _loadRegistersIfNeeded() {
-    if (!_repositoryInitialized) {
-      // Inicializar o repositório
-      imcEntries = _initRepository();
-      _repositoryInitialized = true;
-    }
-    if (widget.showOnlyArchived == 0) {
-      // Mostrar registros arquivados
-      imcEntries = widget.registersRepository.listArchived();
-    } else if (widget.showOnlyArchived == 1) {
-      // Mostrar registros não arquivados
-      imcEntries = widget.registersRepository.listNotArchived();
-    } else if (widget.showOnlyArchived == 2) {
-      // Mostrar todos os registros
-      imcEntries = widget.registersRepository.listAllRegisters();
-    }
+  Future<bool> _loadRegisters(int showOnlyArchived) async {
+    debugPrint('showOnlyArchived: $showOnlyArchived');
+    imcEntries = await _initRepository(
+      showOnlyArchived: (showOnlyArchived == 0
+          ? true
+          : showOnlyArchived == 1
+              ? false
+              : null),
+    );
+    return true;
   }
 
   // Inicializar o repositório
-  List<CalcImc> _initRepository() {
-    return widget.registersRepository.listAllRegisters();
+  Future<List<CalcImc>> _initRepository({bool? showOnlyArchived}) async {
+    return await widget.registersRepository
+        .listAllRegisters(showOnlyArchived: showOnlyArchived);
   }
 
   // Remover um registro

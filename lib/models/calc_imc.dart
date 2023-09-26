@@ -50,7 +50,7 @@ class CalcImc {
 
   /// Verifica se o cálculo de IMC está arquivado.
   // ignore: unnecessary_getters_setters
-  bool get estaArquivado => _estaArquivado;
+  bool get isArchieved => _estaArquivado;
 
   /// Define o peso e recalcula o IMC e a classificação.
   set peso(double peso) {
@@ -95,7 +95,7 @@ class CalcImc {
   }
 
   set dataRegistro(DateTime dataRegistro) => _dataRegistro = dataRegistro;
-  set estaArquivado(bool arquivado) => _estaArquivado = arquivado;
+  set isArchieved(bool arquivado) => _estaArquivado = arquivado;
 
   /// Método privado para classificar o IMC com base nos valores padrão.
   String _classificarIMC(double valorImc) {
@@ -149,7 +149,7 @@ class CalcImc {
       'id': _id,
       'peso': _peso,
       'altura': _altura,
-      'dataRegistro': _dataRegistro,
+      'dataRegistro': _dataRegistro.millisecondsSinceEpoch.toString(),
       'arquivado': _estaArquivado,
     };
   }
